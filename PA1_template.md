@@ -163,3 +163,19 @@ new_data$date <- strptime(new_data$date, format="%Y-%m-%d")
 new_data$weekday <- factor(weekdays(new_data$date) %in% c("Saturday", "Sunday"),
                            labels=c("weekday", "weekend"))
 ```
+
+
+```r
+library(lattice)
+averages<-tapply(new_data$steps, list(new_data$interval,new_data$weekday), mean)
+
+for (i in seq(1,nrow(new_data))) {
+    new_data$average[i] <- averages[as.character(new_data$interval[i]), 
+                                    new_data$weekday[i]]
+}
+xyplot(average ~ interval | weekday, data=new_data, type="l", layout=c(1,2), 
+       ylab="Average number of steps taken", 
+       main="Average number of steps by day and interval")
+```
+
+![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12.png) 
