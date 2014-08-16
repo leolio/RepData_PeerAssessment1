@@ -3,7 +3,10 @@ title: "Peer Assessment 1"
 output: html_document
 ---
 
-##Loading and preprocessing the data
+Peer Assessment 1
+==================
+
+## Loading and preprocessing the data
 
 
 ```r
@@ -16,7 +19,9 @@ For this part, we ignore the missing values in the dataset.
 
 ```r
 steps_by_date <-tapply(data$steps, data$date, sum)
-hist(steps_by_date, xlab="Number of steps", main="Total number of steps taken each day")
+hist(steps_by_date, 
+     xlab="Number of steps",
+     main="Total number of steps taken each day")
 ```
 
 ![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2.png) 
@@ -38,36 +43,44 @@ median(steps_by_date, na.rm=TRUE)
 ```
 ## [1] 10765
 ```
+The mean is 1.0766 &times; 10<sup>4</sup>.
+The median is 10765.
 
 ## What is the average daily activity pattern?
 
 ```r
-steps_by_interval <-tapply(data$steps, data$interval, function(x) mean(x, na.rm=TRUE))
-plot(steps_by_interval, type = "l", main="Average number of steps", xlab="5-minute interval", ylab="Average number of steps")
+steps_by_interval <-tapply(data$steps, 
+                           data$interval, 
+                           function(x) mean(x, na.rm=TRUE))
+plot(steps_by_interval, type = "l", main="Average number of steps", 
+     xlab="5-minute interval", ylab="Average number of steps")
 ```
 
 ![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4.png) 
 
 
 ```r
-# index of max step by interval
 names(steps_by_interval[which.max(steps_by_interval)])
 ```
 
 ```
 ## [1] "835"
 ```
+On average across all the days in the dataset, the 5-minute interval 
+835 contains the maximum 
+number of steps.
 
 ## Imputing missing values
 
 ```r
-# number of NA (rows)
 sum(is.na(data$steps))
 ```
 
 ```
 ## [1] 2304
 ```
+The total number of missing values in the dataset is 2304.
+
 
 ```r
 a<-tapply(data$steps, data$interval, function(x) sum(!is.na(x)))
@@ -88,24 +101,36 @@ sum(b==0)
 ```
 ## [1] 8
 ```
+For filling in all of the missing values in the dataset, I use the mean for the 
+5-minute interval because for one missing value, all the values for that day 
+are missing.
+
+I create a new dataset that is equal to the original dataset but with the 
+missing data filled in.
 
 ```r
 new_data <- data
-mean_by_interval <- tapply(new_data$steps, new_data$interval, function(x) mean(x, na.rm=TRUE))
+mean_by_interval <- tapply(new_data$steps, 
+                           new_data$interval, 
+                           function(x) mean(x, na.rm=TRUE))
 
 for (i in seq(1,nrow(new_data))) {
   if (is.na(new_data$steps[i])) {
     new_data$steps[i] <- mean_by_interval[as.character(new_data$interval[i])]
   }
 }
-
-
-# TRUE steps_by_date
-steps_by_date <-tapply(new_data$steps, new_data$date, sum)
-hist(steps_by_date)
 ```
 
-![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6.png) 
+
+
+```r
+steps_by_date <-tapply(new_data$steps, new_data$date, sum)
+hist(steps_by_date, xlab="Number of steps", 
+     main="Total number of steps taken each day")
+```
+
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9.png) 
+
 
 ```r
 mean(steps_by_date)
@@ -122,11 +147,19 @@ median(steps_by_date)
 ```
 ## [1] 10766
 ```
+The mean is 1.0766 &times; 10<sup>4</sup>.
+The median is 1.0766 &times; 10<sup>4</sup>.
+
+These values don't differ from the estimates from the first part. Imputing 
+missing data impact on the estimates of the total daily number of steps: it 
+adds 8 days at the average.
+
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
 
 ```r
 new_data$date <- strptime(new_data$date, format="%Y-%m-%d")
-new_data$weekday <- factor(weekdays(new_data$date) %in% c("Saturday", "Sunday"), labels=c("weekday", "weekend"))
+new_data$weekday <- factor(weekdays(new_data$date) %in% c("Saturday", "Sunday"),
+                           labels=c("weekday", "weekend"))
 ```

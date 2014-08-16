@@ -3,7 +3,10 @@ title: "Peer Assessment 1"
 output: html_document
 ---
 
-##Loading and preprocessing the data
+Peer Assessment 1
+==================
+
+## Loading and preprocessing the data
 
 ```{r}
 unzip(zipfile="activity.zip")
@@ -14,7 +17,9 @@ data <- read.csv(file="activity.csv")
 For this part, we ignore the missing values in the dataset.
 ```{r}
 steps_by_date <-tapply(data$steps, data$date, sum)
-hist(steps_by_date, xlab="Number of steps", main="Total number of steps taken each day")
+hist(steps_by_date, 
+     xlab="Number of steps",
+     main="Total number of steps taken each day")
 ```
 
 
@@ -22,52 +27,81 @@ hist(steps_by_date, xlab="Number of steps", main="Total number of steps taken ea
 mean(steps_by_date, na.rm=TRUE)
 median(steps_by_date, na.rm=TRUE)
 ```
+The mean is `r mean(steps_by_date, na.rm=TRUE)`.
+The median is `r median(steps_by_date, na.rm=TRUE)`.
 
 ## What is the average daily activity pattern?
 ```{r}
-steps_by_interval <-tapply(data$steps, data$interval, function(x) mean(x, na.rm=TRUE))
-plot(steps_by_interval, type = "l", main="Average number of steps", xlab="5-minute interval", ylab="Average number of steps")
+steps_by_interval <-tapply(data$steps, 
+                           data$interval, 
+                           function(x) mean(x, na.rm=TRUE))
+plot(steps_by_interval, type = "l", main="Average number of steps", 
+     xlab="5-minute interval", ylab="Average number of steps")
 ```
 
 ```{r}
-# index of max step by interval
 names(steps_by_interval[which.max(steps_by_interval)])
-
 ```
+On average across all the days in the dataset, the 5-minute interval 
+`r names(steps_by_interval[which.max(steps_by_interval)])` contains the maximum 
+number of steps.
 
 ## Imputing missing values
 ```{r}
-# number of NA (rows)
 sum(is.na(data$steps))
+```
+The total number of missing values in the dataset is `r sum(is.na(data$steps))`.
 
-
+```{r}
 a<-tapply(data$steps, data$interval, function(x) sum(!is.na(x)))
 b<-tapply(data$steps, data$date, function(x) sum(!is.na(x)))
 # number of non NA by interval
 sum(a==0)
 # number of non NA by date
 sum(b==0)
+```
+For filling in all of the missing values in the dataset, I use the mean for the 
+5-minute interval because for one missing value, all the values for that day 
+are missing.
 
+I create a new dataset that is equal to the original dataset but with the 
+missing data filled in.
+```{r}
 new_data <- data
-mean_by_interval <- tapply(new_data$steps, new_data$interval, function(x) mean(x, na.rm=TRUE))
+mean_by_interval <- tapply(new_data$steps, 
+                           new_data$interval, 
+                           function(x) mean(x, na.rm=TRUE))
 
 for (i in seq(1,nrow(new_data))) {
   if (is.na(new_data$steps[i])) {
     new_data$steps[i] <- mean_by_interval[as.character(new_data$interval[i])]
   }
 }
+```
 
 
-# TRUE steps_by_date
+```{r}
 steps_by_date <-tapply(new_data$steps, new_data$date, sum)
-hist(steps_by_date)
+hist(steps_by_date, xlab="Number of steps", 
+     main="Total number of steps taken each day")
+```
+
+```{r}
 mean(steps_by_date)
 median(steps_by_date)
 ```
+The mean is `r mean(steps_by_date)`.
+The median is `r median(steps_by_date)`.
+
+These values don't differ from the estimates from the first part. Imputing 
+missing data impact on the estimates of the total daily number of steps: it 
+adds 8 days at the average.
+
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
 ```{r}
 new_data$date <- strptime(new_data$date, format="%Y-%m-%d")
-new_data$weekday <- factor(weekdays(new_data$date) %in% c("Saturday", "Sunday"), labels=c("weekday", "weekend"))
+new_data$weekday <- factor(weekdays(new_data$date) %in% c("Saturday", "Sunday"),
+                           labels=c("weekday", "weekend"))
 ```
